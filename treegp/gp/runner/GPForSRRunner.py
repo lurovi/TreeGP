@@ -438,7 +438,7 @@ def __perform_single_crossmut_pipe(
     else:
         # == CROSSOVER ==
         ttt_1: tuple[tuple[TreeIndividual, ...], bool] = crossover.mate((tree, __perform_single_selection(pop=pop, selection=selection)))
-        new_tree_1: TreeIndividual = ttt_1[0][0]
+        new_tree_1: TreeIndividual = ttt_1[0][Utils.randint(2)]
 
         # == MUTATION ==
         ttt_2_1: tuple[TreeIndividual, bool] = mutation.mutate(new_tree_1)
