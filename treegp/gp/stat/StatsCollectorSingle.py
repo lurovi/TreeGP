@@ -20,7 +20,7 @@ class StatsCollectorSingle:
         max_da: float = float(np.amax(da))
         min_da: float = float(np.amin(da))
         median_da: float = float(np.median(da))
-        var_da: float = float(np.var(da))
+        std_da: float = float(np.std(da))
         q1_da: float = float(np.percentile(da, 25))
         q3_da: float = float(np.percentile(da, 75))
         
@@ -29,7 +29,7 @@ class StatsCollectorSingle:
                                "median": median_da,
                                "min": min_da,
                                "max": max_da,
-                               "var": var_da,
+                               "std": std_da,
                                "q1": q1_da,
                                "q3": q3_da
                               }

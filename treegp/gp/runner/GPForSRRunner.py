@@ -3,7 +3,7 @@ import random
 import time
 import numpy as np
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Optional
 import warnings
 from prettytable import PrettyTable
 from sklearn.preprocessing import StandardScaler, RobustScaler
@@ -43,7 +43,6 @@ def run_gp_for_sr(
         n_constants: int,
         use_constants_from_beginning: bool,
         dataset_name: str,
-        dataset_path: str,
         scale_strategy: str,
         seed: int,
         verbose: bool,
@@ -55,7 +54,12 @@ def run_gp_for_sr(
         mode: str,
         dupl_elim: str,
         expl_pipe: str,
-        elitism: bool
+        elitism: bool,
+        dataset_path: str = '',
+        X_train: Optional[np.ndarray] = None,
+        y_train: Optional[np.ndarray] = None,
+        X_test: Optional[np.ndarray] = None,
+        y_test: Optional[np.ndarray] = None
 ) -> tuple[dict[str, Any], str, str]:
 
     if wall_time < 0.0:
@@ -114,12 +118,16 @@ def run_gp_for_sr(
     # LOADING DATASET
     # ===========================
     
-    dataset: dict[str, tuple[np.ndarray, np.ndarray]] = DatasetGenerator.read_csv_data(path=dataset_path, idx=seed)
-    X_train: np.ndarray = dataset['train'][0]
-    y_train: np.ndarray = dataset['train'][1]
-    X_test: np.ndarray = dataset['test'][0]
-    y_test: np.ndarray = dataset['test'][1]
-    dataset = None
+    if dataset_path.strip() != '':
+        dataset: dict[str, tuple[np.ndarray, np.ndarray]] = DatasetGenerator.read_csv_data(path=dataset_path.strip(), idx=seed)
+        X_train: np.ndarray = dataset['train'][0]
+        y_train: np.ndarray = dataset['train'][1]
+        X_test: np.ndarray = dataset['test'][0]
+        y_test: np.ndarray = dataset['test'][1]
+        dataset = None
+    else:
+        if X_train is None or y_train is None or X_test is None or y_test is None:
+            raise AttributeError(f'You did not declare a dataset path as input, and thus you must explicitly provide the datasets as numpy array (both train and test) to run the evolution.')
 
     if scale_strategy not in ('no', 'standard', 'robust'):
         raise AttributeError(f'{scale_strategy} is an invalid scale strategy.')

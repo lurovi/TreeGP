@@ -145,13 +145,13 @@ class ResultUtils:
         
         d: dict[str, Any] = {k: pareto_front_dict[k] for k in pareto_front_dict}
         with open(path + path_run_id + "tr" + run_id + ".json", "w") as outfile:
-            json.dump({"statistics": d['train_statistics']}, outfile, indent=4)
+            json.dump({"statistics": d['train_statistics']}, outfile, indent=4, ignore_nan=True)
         with open(path + path_run_id + "te" + run_id + ".json", "w") as outfile:
-            json.dump({"statistics": d['test_statistics']}, outfile, indent=4)
+            json.dump({"statistics": d['test_statistics']}, outfile, indent=4, ignore_nan=True)
         del d['train_statistics']
         del d['test_statistics']
         with open(path + path_run_id + "b" + run_id + ".json", "w") as outfile:
-            json.dump(d, outfile, indent=4)
+            json.dump(d, outfile, indent=4, ignore_nan=True)
 
     @staticmethod
     def read_single_json_file(

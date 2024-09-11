@@ -14,10 +14,10 @@ class EvaluationMetrics:
 
     @staticmethod
     def linear_scale_predictions(p: np.ndarray, slope: float, intercept: float) -> np.ndarray:
-        slope: float = np.core.umath.clip(slope, -1e+10, 1e+10)
-        intercept: float = np.core.umath.clip(intercept, -1e+10, 1e+10)
-        p: np.ndarray = intercept + np.core.umath.clip(slope * p, -1e+10, 1e+10)
-        p = np.core.umath.clip(p, -1e+10, 1e+10)
+        slope: float = np.core.umath.clip(slope, -1e+20, 1e+20)
+        intercept: float = np.core.umath.clip(intercept, -1e+20, 1e+20)
+        p: np.ndarray = intercept + np.core.umath.clip(slope * p, -1e+20, 1e+20)
+        p = np.core.umath.clip(p, -1e+20, 1e+20)
         return p
     
     @staticmethod

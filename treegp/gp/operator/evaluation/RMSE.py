@@ -31,10 +31,10 @@ class RMSE(Evaluation):
         if not item.has_cache():
             evaluated_now = True
             start_time_train: float = time.time()
-            train_pred: np.ndarray = np.core.umath.clip(tree(self.__train_data.X(), dataset_type='train'), -1e+10, 1e+10)
+            train_pred: np.ndarray = np.core.umath.clip(tree(self.__train_data.X(), dataset_type='train'), -1e+20, 1e+20)
             end_time_train: float = time.time()
             train_time += end_time_train - start_time_train
-            test_pred: np.ndarray = np.core.umath.clip(tree(self.__test_data.X(), dataset_type='test'), -1e+10, 1e+10)
+            test_pred: np.ndarray = np.core.umath.clip(tree(self.__test_data.X(), dataset_type='test'), -1e+20, 1e+20)
             
             if self.__linear_scaling:
                 start_time_train = time.time()
