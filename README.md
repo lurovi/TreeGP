@@ -1,6 +1,6 @@
 # Tree GP
 
-Vanilla tree-based Genetic Programming (GP) implementation in Python 3.11 with the adoption of genepro 1.3.2 (https://github.com/giorgia-nadizar/genepro).
+Vanilla tree-based Genetic Programming (GP) implementation in Python 3.11 with the adoption of genepro 1.7.0 (https://github.com/giorgia-nadizar/genepro).
 Installation:
 
 ```bash
@@ -9,7 +9,7 @@ cd TreeGP
 conda env create -f environment.yml
 conda activate treegp_env
 cd ..
-git clone -b v1.3.2 https://github.com/giorgia-nadizar/genepro.git
+git clone -b v1.7.0 https://github.com/giorgia-nadizar/genepro.git
 cd genepro
 pip3 install -U .
 cd ..
