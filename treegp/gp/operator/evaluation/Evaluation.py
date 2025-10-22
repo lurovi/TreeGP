@@ -14,3 +14,7 @@ class Evaluation(ABC):
     @abstractmethod
     def evaluate(self, item: T, **kwargs) -> tuple[float | None, bool, float]:
         pass
+    
+    @abstractmethod
+    def get_fitness(self, item: T) -> float | None:
+        pass

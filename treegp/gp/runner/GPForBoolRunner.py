@@ -43,6 +43,7 @@ def run_gp_for_bool(
         dupl_elim: str,
         expl_pipe: str,
         elitism: bool,
+        penalize_unbalanced_individuals: bool,
         parallelize: int
 ) -> tuple[dict[str, Any], str, str]:
 
@@ -118,12 +119,12 @@ def run_gp_for_bool(
     # OPERATORS INITIALIZATION
     # ===========================
 
-    evaluation: Evaluation = NonLinearity(walsh_transform)
+    evaluation: Evaluation = NonLinearity(walsh_transform=walsh_transform, penalize_unbalanced_individuals=penalize_unbalanced_individuals)
 
-    selection: TournamentSelection[TreeBoolean] = TournamentSelection[TreeBoolean](pressure=pressure, key=lambda x: x.non_linearity(), distinct_coordinates=False, reverse=True)
-    
+    selection: TournamentSelection[TreeBoolean] = TournamentSelection[TreeBoolean](pressure=pressure, key=lambda x: evaluation.get_fitness(x), reverse=True, distinct_coordinates=False)
+
     generator: Generator = TreeBoolGenerator(structure=structure)
-    
+
     crossover: Crossover = SubtreeBoolCrossover(structure=structure, crossover_probability=crossover_probability, execute_crossover=execute_crossover)
 
     mutation: Mutation = SubtreeBoolMutation(structure=structure, mutation_probability=mutation_probability, execute_mutation=execute_mutation)
@@ -157,7 +158,7 @@ def run_gp_for_bool(
     # COLLECT RESULTS
     # ===========================
 
-    objective_names: list[str] = [evaluation.classname()]
+    objective_names: list[str] = [evaluation.classname() + '_' + (f'{"PenalizeUnbalanced"}' if penalize_unbalanced_individuals else 'NoPenalizeUnbalanced')]
     pareto_front_df: dict[str, Any] = ResultUtils.parse_result_soo(
         result=res,
         objective_names=objective_names,
@@ -240,7 +241,8 @@ def __actual_gp_exec(
 
     # == RESULT, STATISTICS, EVALUATOR, FITNESS, TOPOLOGY COORDINATES ==
     result: dict[str, Any] = {'best': {}, 'history': []}
-    stats_collector: dict[str, StatsCollectorSingle] = {'train': StatsCollectorSingle(objective_name=evaluation.classname(), revert_sign=False)}
+    stats_collector: dict[str, StatsCollectorSingle] = {'train': StatsCollectorSingle(objective_name=evaluation.classname(), revert_sign=False),
+                                                        'test': StatsCollectorSingle(objective_name=evaluation.classname(), revert_sign=False)}
     total_training_time: float = 0.0
 
     # ===========================
@@ -349,6 +351,7 @@ def __actual_gp_exec(
     # ===========================
 
     result['train_statistics'] = stats_collector['train'].build_list()
+    result['test_statistics'] = stats_collector['test'].build_list()
     result['total_training_time_minutes'] = total_training_time * (1 / 60)
 
     return result
@@ -399,7 +402,7 @@ def __eval_and_update(
     # FITNESS EVALUATION
     # ===========================
 
-    fit_values_dict: dict[str, list[float]] = {'train': []}
+    fit_values_dict: dict[str, list[float]] = {'train': [], 'test': []}
     actual_num_evals: int = 0
     total_train_time: float = 0.0
 
@@ -411,7 +414,8 @@ def __eval_and_update(
             if curr_evaluated_now:
                 actual_num_evals += 1
 
-            fit_values_dict['train'].append(pop[i].non_linearity()) # type: ignore
+            fit_values_dict['train'].append(evaluation.get_fitness(pop[i])) # type: ignore
+            fit_values_dict['test'].append(pop[i].non_linearity())  # Always Non Linearity # type: ignore
     else:
         parallelizer = ProcessPoolExecutorParallelizer(num_workers=parallelize)
         results = parallelizer.parallelize(eval_single_individual, [{'individual': pop[i], 'index': i, 'evaluation': evaluation} for i in range(pop_size)])
@@ -422,18 +426,20 @@ def __eval_and_update(
             if curr_evaluated_now:
                 actual_num_evals += 1
 
-            fit_values_dict['train'].append(non_linearity) # type: ignore
-            
             pop[index].set_cache(
                 truth_table=truth_table, 
                 spectrum=spectrum, 
                 non_linearity=non_linearity
             )
 
+            fit_values_dict['train'].append(evaluation.get_fitness(pop[index])) # type: ignore
+            fit_values_dict['test'].append(non_linearity)  # Always Non Linearity # type: ignore
+
     start_time_train: float = time.time()
     max_value: float = max(fit_values_dict['train'])
     index_of_max_value: int = fit_values_dict['train'].index(max_value)
     best_tree_in_this_gen: TreeBoolean = pop[index_of_max_value]
+    non_linearity_of_best: float = best_tree_in_this_gen.non_linearity() # type: ignore
     end_time_train: float = time.time()
     total_train_time += end_time_train - start_time_train
 
@@ -442,11 +448,14 @@ def __eval_and_update(
     # ===========================
 
     stats_collector['train'].update_fitness_stat_dict(n_gen=current_gen, data=fit_values_dict['train'])
+    stats_collector['test'].update_fitness_stat_dict(n_gen=current_gen, data=fit_values_dict['test'])
 
-    table: PrettyTable = PrettyTable(["Generation", "TrainMax", "TrainMed"])
+    table: PrettyTable = PrettyTable(["Generation", "TrainMax", "TrainMed", "TestOfBest", "TestMed"])
     table.add_row([str(current_gen),
                    max_value,
                    stats_collector['train'].get_fitness_stat(current_gen, 'median'),
+                   non_linearity_of_best,
+                   stats_collector['test'].get_fitness_stat(current_gen, 'median'),
                    ])
     
     if verbose and current_gen % gen_verbosity_level == 0:
@@ -457,7 +466,7 @@ def __eval_and_update(
     # ===========================
 
     best_ind_here_totally: dict[str, Any] = {
-        'Fitness': { evaluation.classname(): {'Train': max_value} },
+        'Fitness': { evaluation.classname(): {'Train': max_value, 'Test': non_linearity_of_best} },
         'PopIndex': index_of_max_value,
         'Generation': current_gen,
         'NNodes': best_tree_in_this_gen.tree().get_n_nodes(),
@@ -471,6 +480,9 @@ def __eval_and_update(
     else:
         if best_ind_here_totally['Fitness'][evaluation.classname()]['Train'] > result['best']['Fitness'][evaluation.classname()]['Train']:
             result['best'] = best_ind_here_totally
+        elif best_ind_here_totally['Fitness'][evaluation.classname()]['Train'] == result['best']['Fitness'][evaluation.classname()]['Train']:
+            if best_ind_here_totally['Fitness'][evaluation.classname()]['Test'] > result['best']['Fitness'][evaluation.classname()]['Test']:
+                result['best'] = best_ind_here_totally
     end_time_train = time.time()
     total_train_time += end_time_train - start_time_train
 

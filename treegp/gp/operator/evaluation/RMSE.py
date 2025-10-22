@@ -54,3 +54,5 @@ class RMSE(Evaluation):
         
         return item.train_rmse(), evaluated_now, train_time
 
+    def get_fitness(self, item: T) -> float | None:
+        return item.train_rmse()

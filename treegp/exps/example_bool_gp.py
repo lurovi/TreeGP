@@ -23,6 +23,7 @@ def main():
     pressure = 3
     dupl_elim = 'none'
     expl_pipe = 'crossmut'
+    penalize_unbalanced_individuals = False
     elitism = True
     parallelize = 10
 
@@ -44,6 +45,7 @@ def main():
         dupl_elim=dupl_elim,
         expl_pipe=expl_pipe,
         elitism=elitism,
+        penalize_unbalanced_individuals=penalize_unbalanced_individuals,
         parallelize=parallelize
     )
     ResultUtils.write_result_to_json(path=folder_name, path_run_id=path_run_id, run_id=run_id, pareto_front_dict=data)
