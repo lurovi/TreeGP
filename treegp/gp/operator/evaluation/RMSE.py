@@ -22,7 +22,7 @@ class RMSE(Evaluation):
         self.__test_data: NumpySupervisedDataset = test_data
         self.__linear_scaling: bool = linear_scaling
 
-    def evaluate(self, item: T, **kwargs) -> tuple[float, bool, float]:
+    def evaluate(self, item: T, **kwargs) -> tuple[float | None, bool, float]:
         tree: Node = item.tree()
         evaluated_now: bool = False
 

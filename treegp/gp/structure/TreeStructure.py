@@ -20,13 +20,13 @@ class TreeStructure:
                  n_features: int,
                  init_max_depth: int,
                  max_depth: int,
-                 constants: list[Constant] = None,
-                 ephemeral_func: Callable = None,
-                 normal_distribution_parameters: list[tuple[float, float]] = None,
-                 p: list[float] = None,
+                 constants: list[Constant] | None = None,
+                 ephemeral_func: Callable | None = None,
+                 normal_distribution_parameters: list[tuple[float, float]] | None = None,
+                 p: list[float] | None = None,
                  generation_strategy: str = 'grow',
-                 fixed_constants: list[Constant] = None,
-                 p_leaves: list[float] = None
+                 fixed_constants: list[Constant] | None = None,
+                 p_leaves: list[float] | None = None
                  ) -> None:
         super().__init__()
         if init_max_depth > max_depth:

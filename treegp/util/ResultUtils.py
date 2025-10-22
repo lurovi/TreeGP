@@ -104,8 +104,8 @@ class ResultUtils:
         pareto_front_dict: dict[str, Any] = {"parameters": {},
                                              "best": result['best'],
                                              "history": result['history'],
-                                             "train_statistics": result['train_statistics'],
-                                             "test_statistics": result['test_statistics'],
+                                             "train_statistics": result['train_statistics'] if 'train_statistics' in result else {},
+                                             "test_statistics": result['test_statistics'] if 'test_statistics' in result else {},
                                              "total_training_time_minutes": result['total_training_time_minutes']
                                              }
         

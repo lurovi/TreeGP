@@ -10,7 +10,7 @@ T = TypeVar('T')
 class TournamentSelection(Selection, Generic[T]):
     def __init__(self,
                  pressure: int,
-                 key: Callable[[T], float],
+                 key: Callable[[T], float | None],
                  distinct_coordinates: bool = False,
                  reverse: bool = False
                  ) -> None:
@@ -20,7 +20,7 @@ class TournamentSelection(Selection, Generic[T]):
         self.__distinct_coordinates: bool = distinct_coordinates
         self.__reverse: bool = reverse
 
-    def select(self, population: list[T], position: tuple[int, ...] = None, **kwargs) -> tuple[T, ...]:
+    def select(self, population: list[T], position: tuple[int, ...] | None = None, **kwargs) -> tuple[T, ...]:
         result: list[T] = []
         already_seen_coordinates: set[tuple[int, ...]] = set()
         for _ in range(self.__pressure):        

@@ -12,5 +12,5 @@ class Evaluation(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def evaluate(self, item: T, **kwargs) -> tuple[float, bool, float]:
+    def evaluate(self, item: T, **kwargs) -> tuple[float | None, bool, float]:
         pass

@@ -12,5 +12,5 @@ class Selection(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def select(self, population: list[T], position: tuple[int, ...] = None, **kwargs) -> tuple[T, ...]:
+    def select(self, population: list[T], position: tuple[int, ...] | None = None, **kwargs) -> tuple[T, ...]:
         pass
